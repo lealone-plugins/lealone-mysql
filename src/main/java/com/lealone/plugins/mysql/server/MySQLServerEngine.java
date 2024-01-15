@@ -5,15 +5,14 @@
  */
 package com.lealone.plugins.mysql.server;
 
+import com.lealone.plugins.mysql.MySQLPlugin;
 import com.lealone.server.ProtocolServer;
 import com.lealone.server.ProtocolServerEngineBase;
 
 public class MySQLServerEngine extends ProtocolServerEngineBase {
 
-    public static final String NAME = "MySQL";
-
     public MySQLServerEngine() {
-        super(NAME);
+        super(MySQLPlugin.NAME);
     }
 
     @Override

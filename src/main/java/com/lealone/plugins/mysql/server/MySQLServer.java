@@ -10,6 +10,7 @@ import com.lealone.db.LealoneDatabase;
 import com.lealone.db.PluginManager;
 import com.lealone.db.scheduler.Scheduler;
 import com.lealone.net.WritableChannel;
+import com.lealone.plugins.mysql.MySQLPlugin;
 import com.lealone.plugins.mysql.sql.expression.function.MySQLFunctionFactory;
 import com.lealone.server.AsyncServer;
 import com.lealone.storage.StorageEngine;
@@ -22,7 +23,7 @@ public class MySQLServer extends AsyncServer<MySQLServerConnection> {
 
     @Override
     public String getType() {
-        return MySQLServerEngine.NAME;
+        return MySQLPlugin.NAME;
     }
 
     @Override
@@ -45,8 +46,8 @@ public class MySQLServer extends AsyncServer<MySQLServerConnection> {
 
     private void createBuiltInDatabase(String dbName) {
         String sql = "CREATE DATABASE IF NOT EXISTS " + dbName //
-                + " PARAMETERS(DEFAULT_SQL_ENGINE='" + MySQLServerEngine.NAME //
-                + "', MODE='" + MySQLServerEngine.NAME + "')";
+                + " PARAMETERS(DEFAULT_SQL_ENGINE='" + MySQLPlugin.NAME //
+                + "', MODE='" + MySQLPlugin.NAME + "')";
         LealoneDatabase.getInstance().getSystemSession().executeUpdateLocal(sql);
     }
 

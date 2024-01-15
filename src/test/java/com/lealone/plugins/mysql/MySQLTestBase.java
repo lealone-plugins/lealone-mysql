@@ -5,19 +5,52 @@
  */
 package com.lealone.plugins.mysql;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Properties;
 
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 
 import com.lealone.common.exceptions.DbException;
+import com.lealone.db.LealoneDatabase;
+import com.lealone.test.TestBase;
 import com.lealone.test.sql.SqlTestBase;
 
 public class MySQLTestBase extends SqlTestBase {
 
     public final static int TEST_PORT = 9410;
+
+    @BeforeClass
+    public static void createMySQLPlugin() throws Exception {
+        TestBase test = new TestBase();
+        Connection conn = test.getConnection(LealoneDatabase.NAME);
+        Statement stmt = conn.createStatement();
+        File classPath = new File("target/classes");
+        String sql = "create plugin if not exists " + MySQLPlugin.NAME //
+                + " implement by '" + MySQLPlugin.class.getName() + "'" //
+                + " class path '" + classPath.getCanonicalPath() + "'" //
+                + " parameters(port=" + TEST_PORT + ", host='127.0.0.1')";
+        stmt.executeUpdate(sql);
+        stmt.executeUpdate("start plugin " + MySQLPlugin.NAME);
+        stmt.close();
+        conn.close();
+    }
+
+    @AfterClass
+    public static void dropMySQLPlugin() throws Exception {
+        TestBase test = new TestBase();
+        Connection conn = test.getConnection(LealoneDatabase.NAME);
+        Statement stmt = conn.createStatement();
+        stmt.executeUpdate("stop plugin " + MySQLPlugin.NAME);
+        stmt.executeUpdate("drop plugin " + MySQLPlugin.NAME);
+        stmt.close();
+        conn.close();
+    }
 
     @Before
     @Override

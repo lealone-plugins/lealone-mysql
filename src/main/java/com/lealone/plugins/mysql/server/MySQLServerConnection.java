@@ -26,6 +26,7 @@ import com.lealone.db.value.ValueNull;
 import com.lealone.net.NetBuffer;
 import com.lealone.net.NetBufferOutputStream;
 import com.lealone.net.WritableChannel;
+import com.lealone.plugins.mysql.MySQLPlugin;
 import com.lealone.plugins.mysql.server.handler.AuthPacketHandler;
 import com.lealone.plugins.mysql.server.handler.CommandPacketHandler;
 import com.lealone.plugins.mysql.server.handler.PacketHandler;
@@ -105,7 +106,7 @@ public class MySQLServerConnection extends AsyncServerConnection {
         this.authPacket = authPacket;
         try {
             session = createSession(authPacket, authPacket.database);
-            session.setSQLEngine(PluginManager.getPlugin(SQLEngine.class, MySQLServerEngine.NAME));
+            session.setSQLEngine(PluginManager.getPlugin(SQLEngine.class, MySQLPlugin.NAME));
         } catch (Throwable e) {
             logAndSendErrorMessage("Failed to create session", e);
             close();
@@ -131,7 +132,7 @@ public class MySQLServerConnection extends AsyncServerConnection {
 
         if (session == null) {
             Properties info = new Properties();
-            info.put("MODE", MySQLServerEngine.NAME);
+            info.put("MODE", MySQLPlugin.NAME);
             info.put("USER", authPacket.user);
             info.put("PASSWORD", StringUtils.convertBytesToHex(getPassword(authPacket)));
             info.put("PASSWORD_HASH", "true");

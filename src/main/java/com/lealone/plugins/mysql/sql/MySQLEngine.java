@@ -6,14 +6,14 @@
 package com.lealone.plugins.mysql.sql;
 
 import com.lealone.db.session.ServerSession;
-import com.lealone.plugins.mysql.server.MySQLServerEngine;
+import com.lealone.plugins.mysql.MySQLPlugin;
 import com.lealone.sql.SQLEngineBase;
 import com.lealone.sql.SQLParserBase;
 
 public class MySQLEngine extends SQLEngineBase {
 
     public MySQLEngine() {
-        super(MySQLServerEngine.NAME);
+        super(MySQLPlugin.NAME);
     }
 
     @Override
