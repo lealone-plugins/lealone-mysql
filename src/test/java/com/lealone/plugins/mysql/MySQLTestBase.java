@@ -23,6 +23,12 @@ import com.lealone.test.sql.SqlTestBase;
 
 public class MySQLTestBase extends SqlTestBase {
 
+    public static void disableAbandonedConnectionCleanup() {
+        // 不启动mysql-cj-abandoned-connection-cleanup线程
+        System.setProperty(com.mysql.cj.conf.PropertyDefinitions.SYSP_disableAbandonedConnectionCleanup,
+                "true");
+    }
+
     public final static int TEST_PORT = 9410;
 
     @BeforeClass
