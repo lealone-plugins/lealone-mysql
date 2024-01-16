@@ -9,6 +9,7 @@ import com.lealone.db.Database;
 import com.lealone.db.LealoneDatabase;
 import com.lealone.db.PluginManager;
 import com.lealone.db.scheduler.Scheduler;
+import com.lealone.db.session.ServerSession;
 import com.lealone.net.WritableChannel;
 import com.lealone.plugins.mysql.MySQLPlugin;
 import com.lealone.plugins.mysql.sql.expression.function.MySQLFunctionFactory;
@@ -48,7 +49,10 @@ public class MySQLServer extends AsyncServer<MySQLServerConnection> {
         String sql = "CREATE DATABASE IF NOT EXISTS " + dbName //
                 + " PARAMETERS(DEFAULT_SQL_ENGINE='" + MySQLPlugin.NAME //
                 + "', MODE='" + MySQLPlugin.NAME + "')";
-        LealoneDatabase.getInstance().getSystemSession().executeUpdateLocal(sql);
+        Database db = LealoneDatabase.getInstance();
+        try (ServerSession session = db.createSession(db.getSystemUser())) {
+            session.executeUpdateLocal(sql);
+        }
     }
 
     public static void createBuiltInSchemas(String dbName) {
@@ -61,7 +65,9 @@ public class MySQLServer extends AsyncServer<MySQLServerConnection> {
         if (!db.isInitialized())
             db.init();
         String sql = "CREATE SCHEMA IF NOT EXISTS " + schemaName + " AUTHORIZATION root";
-        db.getSystemSession().executeUpdateLocal(sql);
+        try (ServerSession session = db.createSession(db.getSystemUser())) {
+            session.executeUpdateLocal(sql);
+        }
     }
 
     @Override
