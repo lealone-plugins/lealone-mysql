@@ -52,6 +52,7 @@ Exit with Ctrl+C
 ## 运行插件
 
 打开一个新的命令行窗口，运行: `java -jar lealone-6.0.0-SNAPSHOT.jar -client`
+
 然后执行以下命令创建并启动插件：
 
 ```sql
