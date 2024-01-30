@@ -71,7 +71,7 @@ public class MySQLServerConnection extends AsyncServerConnection {
     private byte[] salt;
 
     protected MySQLServerConnection(MySQLServer server, WritableChannel channel, Scheduler scheduler) {
-        super(channel, true);
+        super(channel);
         this.server = server;
         this.scheduler = scheduler;
     }
