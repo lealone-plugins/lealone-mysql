@@ -775,6 +775,23 @@ public class MySQLParser extends SQLParserBase {
             readIf("=");
             readStringOrIdentifier();
         }
+        if (readIf("COLLATE")) {
+            readIf("=");
+            readStringOrIdentifier();
+        }
+        String comment = readCommentIf();
+        if (comment != null)
+            command.setComment(comment);
         return command;
+    }
+
+    @Override
+    protected String readCommentIf() {
+        if (readIf("COMMENT")) {
+            if (!readIf("IS"))
+                readIf("=");
+            return readString();
+        }
+        return null;
     }
 }

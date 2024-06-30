@@ -13,6 +13,8 @@ public class MySQLSyntaxTest extends MySQLTestBase {
         testTransactionIsolation();
         testBinaryColumn();
         testDatabaseStatement();
+        testCharset();
+        testComment();
     }
 
     void testTransactionIsolation() throws Exception {
@@ -33,5 +35,14 @@ public class MySQLSyntaxTest extends MySQLTestBase {
                 + "default character set utf8mb4 collate = utf8mb4_general_ci encryption = 'y'");
         executeUpdate("alter database mysql_db1 "
                 + "default character set utf8mb4 default encryption = 'n' READ ONLY DEFAULT");
+    }
+
+    void testCharset() throws Exception {
+        executeUpdate("create table if not exists charset_test (f1 int) "
+                + "DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
+    }
+
+    void testComment() throws Exception {
+        executeUpdate("create table if not exists comment_test (f1 int) comment='comment test'");
     }
 }
