@@ -779,6 +779,10 @@ public class MySQLParser extends SQLParserBase {
             readIf("=");
             readStringOrIdentifier();
         }
+        if (readIf("AUTO_INCREMENT")) {
+            readIf("=");
+            readExpression();
+        }
         String comment = readCommentIf();
         if (comment != null)
             command.setComment(comment);
