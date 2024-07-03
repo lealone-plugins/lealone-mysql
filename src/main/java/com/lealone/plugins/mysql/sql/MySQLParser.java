@@ -27,6 +27,7 @@ import com.lealone.sql.StatementBase;
 import com.lealone.sql.ddl.AlterUser;
 import com.lealone.sql.ddl.CreateSchema;
 import com.lealone.sql.ddl.CreateTable;
+import com.lealone.sql.ddl.DefinitionStatement;
 import com.lealone.sql.dml.SetDatabase;
 import com.lealone.sql.dml.SetSession;
 import com.lealone.sql.dml.SetStatement;
@@ -767,11 +768,19 @@ public class MySQLParser extends SQLParserBase {
     }
 
     @Override
-    protected CreateTable parseCreateTable(boolean temp, boolean globalTemp, boolean persistIndexes,
-            boolean persistData) {
-        CreateTable command = super.parseCreateTable(temp, globalTemp, persistIndexes, persistData);
-        if (readIf("DEFAULT")) {
-            read("CHARSET");
+    protected DefinitionStatement parseAlterTableAddConstraintIf(String tableName, Schema schema) {
+        DefinitionStatement stmt = super.parseAlterTableAddConstraintIf(tableName, schema);
+        if (readIf("USING")) {
+            read("BTREE");
+        }
+        return stmt;
+    }
+
+    @Override
+    protected Column parseColumnWithType(String columnName) {
+        Column c = super.parseColumnWithType(columnName);
+        if (readIf("CHARACTER")) {
+            read("SET");
             readIf("=");
             readStringOrIdentifier();
         }
@@ -779,13 +788,40 @@ public class MySQLParser extends SQLParserBase {
             readIf("=");
             readStringOrIdentifier();
         }
-        if (readIf("AUTO_INCREMENT")) {
-            readIf("=");
-            readExpression();
+        return c;
+    }
+
+    @Override
+    protected CreateTable parseCreateTable(boolean temp, boolean globalTemp, boolean persistIndexes,
+            boolean persistData) {
+        CreateTable command = super.parseCreateTable(temp, globalTemp, persistIndexes, persistData);
+        while (true) {
+            if (readIf("DEFAULT")) {
+                read("CHARSET");
+                readIf("=");
+                readStringOrIdentifier();
+            } else if (readIf("CHARACTER")) {
+                read("SET");
+                readIf("=");
+                readStringOrIdentifier();
+            } else if (readIf("COLLATE")) {
+                readIf("=");
+                readStringOrIdentifier();
+            } else if (readIf("AUTO_INCREMENT")) {
+                readIf("=");
+                readExpression();
+
+            } else if (readIf("ROW_FORMAT")) {
+                readIf("=");
+                readExpression();
+            } else {
+                String comment = readCommentIf();
+                if (comment != null)
+                    command.setComment(comment);
+                else
+                    break;
+            }
         }
-        String comment = readCommentIf();
-        if (comment != null)
-            command.setComment(comment);
         return command;
     }
 
