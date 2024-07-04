@@ -18,6 +18,8 @@ Lealone 高度兼容 MySQL 的协议和 SQL 语法，可以使用 MySQL 的各�
 
 假设 jar 包的绝对路径是 `E:\lealone\lealone-plugins\mysql\target\lealone-mysql-plugin-6.0.0.jar`
 
+也可以直接下载插件 [lealone-mysql-plugin-6.0.0.jar](https://github.com/lealone-plugins/.github/releases/download/lealone-plugins-6.0.0/lealone-mysql-plugin-6.0.0.jar)
+
 
 ## 下载 Lealone
 
