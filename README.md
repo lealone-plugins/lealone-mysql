@@ -61,8 +61,10 @@ Exit with Ctrl+C
 create plugin mysql
   implement by 'com.lealone.plugins.mysql.MySQLPlugin' 
   class path 'E:\lealone\lealone-plugins\mysql\target\lealone-mysql-plugin-6.0.0.jar'
-  --端口号默认就是3306，如果被其他进程占用了可以改成别的
-  parameters (port=3306);
+  parameters (
+    port=3306,        --端口号默认就是3306，如果被其他进程占用了可以改成别的
+    auto_start=false  --如果 auto_start 为 true，执行 create plugin 后或启动数据库时都会自动启动插件
+  );
  
 start plugin mysql;
 ```
