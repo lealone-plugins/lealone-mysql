@@ -14,16 +14,16 @@ Lealone 高度兼容 MySQL 的协议和 SQL 语法，可以使用 MySQL 的各�
 
 运行 `mvn clean package -Dmaven.test.skip=true`
 
-生成 jar 包 `target\lealone-mysql-plugin-6.0.0.jar`
+生成 jar 包 `target\lealone-mysql-plugin-6.0.1.jar`
 
-假设 jar 包的绝对路径是 `E:\lealone\lealone-plugins\mysql\target\lealone-mysql-plugin-6.0.0.jar`
+假设 jar 包的绝对路径是 `E:\lealone\lealone-plugins\mysql\target\lealone-mysql-plugin-6.0.1.jar`
 
-也可以直接下载插件 [lealone-mysql-plugin-6.0.0.jar](https://github.com/lealone-plugins/.github/releases/download/lealone-plugins-6.0.0/lealone-mysql-plugin-6.0.0.jar)
+也可以直接下载插件 [lealone-mysql-plugin-6.0.1.jar](https://github.com/lealone-plugins/.github/releases/download/lealone-plugins-6.0.1/lealone-mysql-plugin-6.0.1.jar)
 
 
 ## 下载 Lealone
 
-[lealone-6.0.0.jar](https://github.com/lealone/Lealone/releases/download/lealone-6.0.0/lealone-6.0.0.jar)
+[lealone-6.0.1.jar](https://github.com/lealone/Lealone/releases/download/lealone-6.0.1/lealone-6.0.1.jar)
 
 Lealone 只有一个 jar 包，下载下来之后随意放到一个目录即可
 
@@ -32,10 +32,10 @@ Lealone 只有一个 jar 包，下载下来之后随意放到一个目录即可
 
 ## 启动 Lealone 数据库
 
-打开一个新的命令行窗口，运行: `java -jar lealone-6.0.0.jar`
+打开一个新的命令行窗口，运行: `java -jar lealone-6.0.1.jar`
 
 ```java
-Lealone version: 6.0.0
+Lealone version: 6.0.1
 Use default config
 Base dir: ./lealone_data
 Init storage engines: 5 ms
@@ -53,14 +53,14 @@ Exit with Ctrl+C
 
 ## 运行插件
 
-打开一个新的命令行窗口，运行: `java -jar lealone-6.0.0.jar -client`
+打开一个新的命令行窗口，运行: `java -jar lealone-6.0.1.jar -client`
 
 然后执行以下命令创建并启动插件：
 
 ```sql
 create plugin mysql
   implement by 'com.lealone.plugins.mysql.MySQLPlugin' 
-  class path 'E:\lealone\lealone-plugins\mysql\target\lealone-mysql-plugin-6.0.0.jar'
+  class path 'E:\lealone\lealone-plugins\mysql\target\lealone-mysql-plugin-6.0.1.jar'
   parameters (
     port=3306,        --端口号默认就是3306，如果被其他进程占用了可以改成别的
     auto_start=false  --如果 auto_start 为 true，执行 create plugin 后或启动数据库时都会自动启动插件
@@ -91,7 +91,7 @@ drop plugin mysql;
 ```sql
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 4
-Server version: 5.7.35 Lealone-6.0.0 Community Server - SSPL
+Server version: 5.7.35 Lealone-6.0.1 Community Server - SSPL
 
 Copyright (c) 2000, 2021, Oracle and/or its affiliates.
 
