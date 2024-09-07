@@ -169,8 +169,8 @@ public class MySQLParser extends SQLParserBase {
 
     @Override
     protected Expression parseVariable() {
-        readIf("@"); // SET @@XXX 语法
         read();
+        readIf("@"); // SET @@XXX 语法
         String vname = readAliasIdentifier();
         if (vname.equalsIgnoreCase("session") || vname.equalsIgnoreCase("global")) {
             readIf(".");

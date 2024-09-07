@@ -15,6 +15,7 @@ public class MySQLSyntaxTest extends MySQLTestBase {
         testDatabaseStatement();
         testCharset();
         testComment();
+        testVariable();
     }
 
     void testTransactionIsolation() throws Exception {
@@ -44,5 +45,9 @@ public class MySQLSyntaxTest extends MySQLTestBase {
 
     void testComment() throws Exception {
         executeUpdate("create table if not exists comment_test (f1 int) comment='comment test'");
+    }
+
+    void testVariable() throws Exception {
+        executeQuery("select @a, @@b");
     }
 }
