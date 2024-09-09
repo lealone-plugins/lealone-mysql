@@ -88,7 +88,11 @@ public class HandshakePacket extends ResponsePacket {
         out.writeUB2(serverCapabilities);
         out.write(serverCharsetIndex);
         out.writeUB2(serverStatus);
-        out.writeUB2(Capabilities.CLIENT_PLUGIN_AUTH >> 16);
+        int flag = 0;
+        flag |= Capabilities.CLIENT_PLUGIN_AUTH;
+        // flag |= Capabilities.CLIENT_DEPRECATE_EOF;
+        flag = flag >> 16;
+        out.writeUB2(flag);
         out.write((byte) (20 + 1));
         out.write(FILLER_10);
         out.writeWithNull(authPluginDataPart2);

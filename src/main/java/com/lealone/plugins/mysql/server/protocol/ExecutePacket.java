@@ -90,7 +90,6 @@ import com.lealone.sql.PreparedSQLStatement;
  */
 public class ExecutePacket extends RequestPacket {
 
-    public byte code;
     public long statementId;
     public byte flags;
     public long iterationCount;
@@ -105,7 +104,6 @@ public class ExecutePacket extends RequestPacket {
 
     public void read(PacketInput in, String charset, ServerSession session) {
         setHeader(in);
-        code = in.read();
         statementId = in.readUB4();
         flags = in.read();
         iterationCount = in.readUB4();

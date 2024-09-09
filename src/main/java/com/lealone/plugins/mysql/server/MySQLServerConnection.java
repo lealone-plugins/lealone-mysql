@@ -13,7 +13,9 @@ import java.util.Properties;
 import com.lealone.common.exceptions.DbException;
 import com.lealone.common.logging.Logger;
 import com.lealone.common.logging.LoggerFactory;
+import com.lealone.common.util.ExpiringMap;
 import com.lealone.common.util.StringUtils;
+import com.lealone.db.CommandParameter;
 import com.lealone.db.ConnectionInfo;
 import com.lealone.db.Constants;
 import com.lealone.db.ManualCloseable;
@@ -146,6 +148,14 @@ public class MySQLServerConnection extends AsyncServerConnection {
             scheduler.addSessionInfo(si);
             session.setScheduler(scheduler);
             session.setVersion(MySQLServer.SERVER_VERSION);
+            session.setCache(new ExpiringMap<>(scheduler, server.getSessionTimeout(), true, cObject -> {
+                try {
+                    cObject.value.close();
+                } catch (Exception e) {
+                    logger.warn(e.getMessage());
+                }
+                return null;
+            }));
         }
         session.setCurrentSchema(session.getDatabase().getSchema(session, schemaName));
         return session;
@@ -171,12 +181,42 @@ public class MySQLServerConnection extends AsyncServerConnection {
     public void prepareStatement(String sql) {
         PreparedSQLStatement stmt = prepareStatement(sql, true);
         if (stmt != null) {
+            PacketOutput out = getPacketOutput();
             PreparedOkPacket packet = new PreparedOkPacket();
             packet.packetId = 1;
             packet.statementId = stmt.getId();
-            packet.columnsNumber = stmt.getMetaData().get().getVisibleColumnCount();
+            Result result = stmt.getMetaData().get();
+            packet.columnsNumber = result == null ? 0 : result.getVisibleColumnCount();
             packet.parametersNumber = stmt.getParameters().size();
-            sendPacket(packet);
+            packet.write(out);
+
+            EOFPacket lastEof = new EOFPacket();
+            lastEof.packetId = 2;
+            lastEof.write(out);
+
+            byte packetId = 2;
+            if (packet.parametersNumber > 0) {
+                FieldPacket[] fields = new FieldPacket[packet.parametersNumber];
+                for (int i = 0; i < packet.parametersNumber; i++) {
+                    CommandParameter cp = stmt.getParameters().get(i);
+                    fields[i] = Packet.getField("p" + i, Fields.toMySQLType(cp.getType()));
+                    fields[i].packetId = ++packetId;
+                }
+                for (FieldPacket field : fields) {
+                    field.write(out);
+                }
+            }
+            if (packet.columnsNumber > 0) {
+                FieldPacket[] fields = new FieldPacket[packet.columnsNumber];
+                for (int i = 0; i < packet.columnsNumber; i++) {
+                    fields[i] = Packet.getField(result.getAlias(i).toLowerCase(),
+                            Fields.toMySQLType(result.getColumnType(i)));
+                    fields[i].packetId = ++packetId;
+                }
+                for (FieldPacket field : fields) {
+                    field.write(out);
+                }
+            }
         }
     }
 

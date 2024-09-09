@@ -103,6 +103,7 @@ public interface Capabilities {
     int CLIENT_MULTI_RESULTS = 131072;
 
     int CLIENT_PLUGIN_AUTH = 0x00080000;
+    int CLIENT_DEPRECATE_EOF = 0x01000000;
 
     public static int getServerCapabilities() {
         int flag = 0;
@@ -122,6 +123,8 @@ public interface Capabilities {
         flag |= CLIENT_TRANSACTIONS;
         // flag |= ServerDefs.CLIENT_RESERVED;
         flag |= CLIENT_SECURE_CONNECTION;
+        // flag |= CLIENT_PLUGIN_AUTH;
+        // flag |= CLIENT_DEPRECATE_EOF;
         return flag;
     }
 }
