@@ -5,7 +5,6 @@
  */
 package com.lealone.plugins.mysql;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -36,10 +35,10 @@ public class MySQLTestBase extends SqlTestBase {
         TestBase test = new TestBase();
         Connection conn = test.getConnection(LealoneDatabase.NAME);
         Statement stmt = conn.createStatement();
-        File classPath = new File("target/classes");
+        // File classPath = new File("target/classes");
         String sql = "create plugin if not exists " + MySQLPlugin.NAME //
                 + " implement by '" + MySQLPlugin.class.getName() + "'" //
-                + " class path '" + classPath.getCanonicalPath() + "'" //
+                // + " class path '" + classPath.getCanonicalPath() + "'" //
                 + " parameters(port=" + TEST_PORT + ", host='127.0.0.1')";
         stmt.executeUpdate(sql);
         stmt.executeUpdate("start plugin " + MySQLPlugin.NAME);

@@ -5,28 +5,27 @@
  */
 package com.lealone.plugins.mysql.server;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import java.util.Calendar;
 import java.util.Properties;
 
 import com.lealone.common.exceptions.DbException;
 import com.lealone.common.logging.Logger;
 import com.lealone.common.logging.LoggerFactory;
-import com.lealone.common.util.ExpiringMap;
 import com.lealone.common.util.StringUtils;
-import com.lealone.db.CommandParameter;
 import com.lealone.db.ConnectionInfo;
 import com.lealone.db.Constants;
 import com.lealone.db.ManualCloseable;
-import com.lealone.db.PluginManager;
+import com.lealone.db.command.CommandParameter;
+import com.lealone.db.plugin.PluginManager;
 import com.lealone.db.result.Result;
 import com.lealone.db.scheduler.Scheduler;
 import com.lealone.db.session.ServerSession;
+import com.lealone.db.util.ExpiringMap;
 import com.lealone.db.value.Value;
 import com.lealone.db.value.ValueNull;
 import com.lealone.net.NetBuffer;
-import com.lealone.net.NetBufferOutputStream;
 import com.lealone.net.WritableChannel;
 import com.lealone.plugins.mysql.MySQLPlugin;
 import com.lealone.plugins.mysql.server.handler.AuthPacketHandler;
@@ -47,7 +46,7 @@ import com.lealone.plugins.mysql.server.protocol.PreparedOkPacket;
 import com.lealone.plugins.mysql.server.protocol.ResultSetHeaderPacket;
 import com.lealone.plugins.mysql.server.protocol.RowDataPacket;
 import com.lealone.server.AsyncServerConnection;
-import com.lealone.server.scheduler.SessionInfo;
+import com.lealone.server.scheduler.ServerSessionInfo;
 import com.lealone.sql.PreparedSQLStatement;
 import com.lealone.sql.SQLEngine;
 import com.lealone.sql.SQLStatement;
@@ -62,9 +61,8 @@ public class MySQLServerConnection extends AsyncServerConnection {
     private final Calendar calendar = Calendar.getInstance();
 
     private final MySQLServer server;
-    private final Scheduler scheduler;
     private ServerSession session;
-    private SessionInfo si;
+    private ServerSessionInfo si;
 
     private PacketHandler packetHandler;
     private AuthPacket authPacket;
@@ -72,10 +70,14 @@ public class MySQLServerConnection extends AsyncServerConnection {
 
     private byte[] salt;
 
+    private PacketInput in;
+    private PacketOutput out;
+
     protected MySQLServerConnection(MySQLServer server, WritableChannel channel, Scheduler scheduler) {
-        super(channel);
+        super(channel, scheduler);
         this.server = server;
-        this.scheduler = scheduler;
+        in = new PacketInput(this, scheduler.getInputBuffer());
+        out = new PacketOutput(writableChannel, scheduler.getOutputBuffer());
     }
 
     public Calendar getCalendar() {
@@ -87,7 +89,7 @@ public class MySQLServerConnection extends AsyncServerConnection {
     }
 
     @Override
-    public void closeSession(SessionInfo si) {
+    public void closeSession(ServerSessionInfo si) {
     }
 
     @Override
@@ -144,7 +146,7 @@ public class MySQLServerConnection extends AsyncServerConnection {
             ci.setSalt(salt);
             ci.setRemote(false);
             session = (ServerSession) ci.createSession();
-            si = new SessionInfo(scheduler, this, session, -1, -1);
+            si = new ServerSessionInfo(scheduler, this, session, -1, -1);
             scheduler.addSessionInfo(si);
             session.setScheduler(scheduler);
             session.setVersion(MySQLServer.SERVER_VERSION);
@@ -181,7 +183,6 @@ public class MySQLServerConnection extends AsyncServerConnection {
     public void prepareStatement(String sql) {
         PreparedSQLStatement stmt = prepareStatement(sql, true);
         if (stmt != null) {
-            PacketOutput out = getPacketOutput();
             PreparedOkPacket packet = new PreparedOkPacket();
             packet.packetId = 1;
             packet.statementId = stmt.getId();
@@ -303,8 +304,6 @@ public class MySQLServerConnection extends AsyncServerConnection {
         }
         eof.packetId = ++packetId;
 
-        PacketOutput out = getPacketOutput();
-
         // write header
         header.write(out);
 
@@ -393,44 +392,42 @@ public class MySQLServerConnection extends AsyncServerConnection {
     }
 
     private void sendMessage(byte[] data) {
-        try (NetBufferOutputStream out = new NetBufferOutputStream(writableChannel, data.length,
-                scheduler.getDataBufferFactory())) {
+        try {
+            out.startWrite();
             out.write(data);
-            out.flush(false);
-        } catch (IOException e) {
+            out.flush();
+        } catch (Exception e) {
             logger.error("Failed to send message", e);
         }
     }
 
     private void sendPacket(Packet packet) {
-        PacketOutput out = getPacketOutput();
         packet.write(out);
     }
 
-    private PacketOutput getPacketOutput() {
-        return new PacketOutput(writableChannel, scheduler.getDataBufferFactory());
+    @Override
+    public int getPacketLengthByteCount() {
+        return 3;
     }
 
     @Override
-    public int getPacketLength() {
-        int length = (packetLengthByteBuffer.get() & 0xff);
-        length |= (packetLengthByteBuffer.get() & 0xff) << 8;
-        length |= (packetLengthByteBuffer.get() & 0xff) << 16;
+    public int getPacketLength(ByteBuffer buffer) {
+        int length = (buffer.get() & 0xff);
+        length |= (buffer.get() & 0xff) << 8;
+        length |= (buffer.get() & 0xff) << 16;
         return length;
     }
 
     @Override
-    public void handle(NetBuffer buffer) {
-        if (!buffer.isOnlyOnePacket()) {
-            DbException.throwInternalError("NetBuffer must be OnlyOnePacket");
-        }
+    public void handle(NetBuffer buffer, boolean autoRecycle) {
         try {
-            PacketInput input = new PacketInput(this, packetLengthByteBuffer.get(3), buffer);
-            packetHandler.handle(input);
+            in.reset((byte) buffer.getUnsignedByte(), buffer);
+            packetHandler.handle(in);
         } catch (Throwable e) {
             logAndSendErrorMessage("Failed to handle packet", e);
         } finally {
-            buffer.recycle();
+            if (autoRecycle)
+                buffer.recycle();
         }
     }
 }

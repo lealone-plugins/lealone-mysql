@@ -23,6 +23,7 @@ public abstract class ResponsePacket extends Packet {
 
     // write header
     private void writeHeader(PacketOutput out) {
+        out.startWrite();
         int size = calcPacketSize();
         out.allocate(4 + size); // PacketHeader占4个字节
         out.writeUB3(size);

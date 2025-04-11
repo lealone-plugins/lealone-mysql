@@ -9,8 +9,8 @@ import java.util.Map;
 
 import com.lealone.common.logging.Logger;
 import com.lealone.common.logging.LoggerFactory;
-import com.lealone.db.PluginBase;
-import com.lealone.db.PluginManager;
+import com.lealone.db.plugin.PluginBase;
+import com.lealone.db.plugin.PluginManager;
 import com.lealone.plugins.mysql.server.MySQLServerEngine;
 import com.lealone.plugins.mysql.sql.MySQLEngine;
 import com.lealone.server.ProtocolServer;

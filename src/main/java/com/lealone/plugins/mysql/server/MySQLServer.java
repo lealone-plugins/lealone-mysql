@@ -7,7 +7,7 @@ package com.lealone.plugins.mysql.server;
 
 import com.lealone.db.Database;
 import com.lealone.db.LealoneDatabase;
-import com.lealone.db.PluginManager;
+import com.lealone.db.plugin.PluginManager;
 import com.lealone.db.scheduler.Scheduler;
 import com.lealone.db.session.ServerSession;
 import com.lealone.net.WritableChannel;

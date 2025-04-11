@@ -22,15 +22,18 @@ public class PacketInput {
     private static final byte[] EMPTY_BYTES = new byte[0];
 
     private final MySQLServerConnection conn;
-    private final int packetLength;
-    private final byte packetId;
     private final ByteBuffer buffer;
+    private int packetLength;
+    private byte packetId;
 
-    public PacketInput(MySQLServerConnection conn, byte packetId, NetBuffer netBuffer) {
+    public PacketInput(MySQLServerConnection conn, NetBuffer netBuffer) {
         this.conn = conn;
+        this.buffer = netBuffer.getByteBuffer();
+    }
+
+    public void reset(byte packetId, NetBuffer netBuffer) {
         this.packetLength = netBuffer.length() + 4;
         this.packetId = packetId;
-        this.buffer = netBuffer.getByteBuffer();
     }
 
     public int getPacketLength() {

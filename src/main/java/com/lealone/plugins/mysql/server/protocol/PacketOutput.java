@@ -7,33 +7,39 @@ package com.lealone.plugins.mysql.server.protocol;
 
 import java.nio.ByteBuffer;
 
-import com.lealone.db.DataBuffer;
-import com.lealone.db.DataBufferFactory;
+import com.lealone.db.session.Session;
+import com.lealone.net.NetBuffer;
+import com.lealone.net.TransferOutputStream.GlobalWritableChannel;
 import com.lealone.net.WritableChannel;
 
 public class PacketOutput {
 
-    private static final int BUFFER_SIZE = 8 * 1024;
+    private final GlobalWritableChannel channel;
+    private final ByteBuffer buffer;
 
-    private final WritableChannel writableChannel;
-    private final DataBufferFactory dataBufferFactory;
-    private DataBuffer dataBuffer;
-    private ByteBuffer buffer;
-
-    public PacketOutput(WritableChannel writableChannel, DataBufferFactory dataBufferFactory) {
-        this.writableChannel = writableChannel;
-        this.dataBufferFactory = dataBufferFactory;
-    }
-
-    public ByteBuffer allocate(int capacity) {
-        capacity = Math.min(capacity, BUFFER_SIZE);
-        dataBuffer = dataBufferFactory.create(capacity);
-        buffer = dataBuffer.getBuffer();
-        return buffer;
+    public PacketOutput(WritableChannel writableChannel, NetBuffer outBuffer) {
+        channel = new GlobalWritableChannel(writableChannel, outBuffer);
+        buffer = channel.getByteBuffer();
     }
 
     public ByteBuffer getBuffer() {
         return buffer;
+    }
+
+    public void allocate(int capacity) {
+        channel.allocate(capacity);
+    }
+
+    public void flush() {
+        channel.flush();
+    }
+
+    public void startWrite() {
+        startWrite(Session.STATUS_OK);
+    }
+
+    public void startWrite(int status) {
+        channel.startWrite(status);
     }
 
     public void writeOrFlush(byte[] src) {
@@ -47,21 +53,12 @@ public class PacketOutput {
             } else {
                 buffer.put(src, offset, remaining);
                 flush();
-                buffer = allocate(BUFFER_SIZE);
+                startWrite();
                 offset += remaining;
                 length -= remaining;
                 remaining = buffer.remaining();
                 continue;
             }
-        }
-    }
-
-    public void flush() {
-        if (dataBuffer != null) {
-            dataBuffer.getAndFlipBuffer();
-            writableChannel.write(writableChannel.getBufferFactory().createBuffer(dataBuffer));
-            dataBuffer = null;
-            buffer = null;
         }
     }
 

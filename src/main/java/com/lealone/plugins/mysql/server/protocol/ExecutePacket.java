@@ -18,7 +18,7 @@ package com.lealone.plugins.mysql.server.protocol;
 import java.math.BigDecimal;
 import java.util.List;
 
-import com.lealone.db.CommandParameter;
+import com.lealone.db.command.CommandParameter;
 import com.lealone.db.session.ServerSession;
 import com.lealone.db.value.Value;
 import com.lealone.db.value.ValueByte;
