@@ -415,19 +415,28 @@ public class MySQLServerConnection extends AsyncServerConnection {
         int length = (buffer.get() & 0xff);
         length |= (buffer.get() & 0xff) << 8;
         length |= (buffer.get() & 0xff) << 16;
+        packetLength = length;
         return length;
     }
 
+    private int packetLength;
+
     @Override
     public void handle(NetBuffer buffer, boolean autoRecycle) {
+        int start = buffer.position();
         try {
-            in.reset((byte) buffer.getUnsignedByte(), buffer);
+            in.reset((byte) buffer.getUnsignedByte(), buffer, packetLength);
             packetHandler.handle(in);
         } catch (Throwable e) {
             logAndSendErrorMessage("Failed to handle packet", e);
         } finally {
             if (autoRecycle)
                 buffer.recycle();
+            else {
+                // 如果一个包没有读完，忽略剩余部分
+                if (buffer.position() - start + 1 < packetLength)
+                    buffer.position(packetLength + start + 1);
+            }
         }
     }
 }

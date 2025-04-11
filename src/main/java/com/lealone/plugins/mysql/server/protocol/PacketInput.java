@@ -22,7 +22,7 @@ public class PacketInput {
     private static final byte[] EMPTY_BYTES = new byte[0];
 
     private final MySQLServerConnection conn;
-    private final ByteBuffer buffer;
+    private ByteBuffer buffer;
     private int packetLength;
     private byte packetId;
 
@@ -31,9 +31,10 @@ public class PacketInput {
         this.buffer = netBuffer.getByteBuffer();
     }
 
-    public void reset(byte packetId, NetBuffer netBuffer) {
-        this.packetLength = netBuffer.length() + 4;
+    public void reset(byte packetId, NetBuffer netBuffer, int packetLength) {
+        this.packetLength = packetLength + 4;
         this.packetId = packetId;
+        this.buffer = netBuffer.getByteBuffer();
     }
 
     public int getPacketLength() {
