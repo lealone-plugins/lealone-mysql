@@ -73,11 +73,17 @@ public class MySQLServerConnection extends AsyncServerConnection {
     private PacketInput in;
     private PacketOutput out;
 
+    private String charset;
+
     protected MySQLServerConnection(MySQLServer server, WritableChannel channel, Scheduler scheduler) {
         super(channel, scheduler);
         this.server = server;
         in = new PacketInput(this, scheduler.getInputBuffer());
         out = new PacketOutput(writableChannel, scheduler.getOutputBuffer());
+    }
+
+    public String getCharset() {
+        return charset;
     }
 
     public Calendar getCalendar() {
@@ -108,6 +114,8 @@ public class MySQLServerConnection extends AsyncServerConnection {
 
     public void authenticate(AuthPacket authPacket) {
         this.authPacket = authPacket;
+        this.charset = com.lealone.plugins.mysql.server.util.CharsetMapping
+                .getStaticJavaEncodingForCollationIndex(authPacket.charsetIndex);
         try {
             session = createSession(authPacket, authPacket.database);
             session.setSQLEngine(PluginManager.getPlugin(SQLEngine.class, MySQLPlugin.NAME));

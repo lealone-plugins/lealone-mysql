@@ -22,7 +22,7 @@ public class CommandPacketHandler implements PacketHandler {
 
     private String readSql(PacketInput in) {
         // 使用指定的编码来读取数据
-        String sql = in.readString("utf-8");
+        String sql = in.readString(conn.getCharset());
         if (sql != null)
             sql = sql.trim();
         return sql;
