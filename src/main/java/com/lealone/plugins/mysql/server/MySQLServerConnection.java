@@ -150,7 +150,7 @@ public class MySQLServerConnection extends AsyncServerConnection {
             scheduler.addSessionInfo(si);
             session.setScheduler(scheduler);
             session.setVersion(MySQLServer.SERVER_VERSION);
-            session.setCache(new ExpiringMap<>(scheduler, server.getSessionTimeout(), true, cObject -> {
+            session.setCache(new ExpiringMap<>(scheduler, server.getSessionTimeout(), cObject -> {
                 try {
                     cObject.value.close();
                 } catch (Exception e) {
